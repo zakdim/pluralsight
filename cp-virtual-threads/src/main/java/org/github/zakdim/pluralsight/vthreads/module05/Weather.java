@@ -3,6 +3,7 @@ package org.github.zakdim.pluralsight.vthreads.module05;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 public record Weather(String weather, String server) {
@@ -15,7 +16,7 @@ public record Weather(String weather, String server) {
 
     public static Weather readWeather() {
 
-        try (var scope = new StructuredTaskScope<Weather>()) {
+        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<Weather>()) {
 
             var f1 = scope.fork(Weather::readFromInternationalWF);
             var f2 = scope.fork(Weather::readFromGlobalWF);
@@ -36,11 +37,11 @@ public record Weather(String weather, String server) {
                 System.out.println(STR." \{f3.get()}");
             }
 
-        } catch (InterruptedException e) {
+            return scope.result();
+
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
-
-        return readFromInternationalWF();
     }
 
     public static Weather readFromInternationalWF() {
