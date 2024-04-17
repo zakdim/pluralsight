@@ -2,33 +2,57 @@ package org.github.zakdim.pluralsight.vthreads.module05;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.StructuredTaskScope;
-import java.util.stream.Stream;
 
 public record Flight(String from, String to, int price, String airline) {
 
     private static Random random = new Random();
 
+    public static class FlightException extends RuntimeException {}
+
+    private static class FlightScope extends StructuredTaskScope<Flight> {
+
+        private volatile Collection<Flight> flights = new ConcurrentLinkedQueue<>();
+        private volatile Collection<Throwable> exceptions = new ConcurrentLinkedQueue<>();
+
+        @Override
+        protected void handleComplete(Subtask<? extends Flight> subtask) {
+            switch (subtask.state()) {
+                case UNAVAILABLE -> throw new IllegalStateException("Task should be done");
+                case SUCCESS -> this.flights.add(subtask.get());
+                case FAILED -> this.exceptions.add(subtask.exception());
+            }
+        }
+
+        public FlightException exceptions() {
+            FlightException flightException = new FlightException();
+            this.exceptions.forEach(flightException::addSuppressed);
+            return flightException;
+        }
+
+        public Flight bestFlight() {
+            return this.flights.stream()
+                    .min(Comparator.comparingInt(Flight::price))
+                    .orElseThrow(this::exceptions);
+        }
+    }
+
     public static Flight readFlight(String from, String to) {
 
         FlightQuery query = new FlightQuery(from, to);
 
-        try (var scope = new StructuredTaskScope<Flight>()) {
-            var t1 = scope.fork(query::readFromAlphaAirlines);
-            var t2 = scope.fork(query::readFromGlobalAirlines);
-            var t3 = scope.fork(query::readFromPlanetAirlines);
+        try (var scope = new FlightScope()) {
+            scope.fork(query::readFromAlphaAirlines);
+            scope.fork(query::readFromGlobalAirlines);
+            scope.fork(query::readFromPlanetAirlines);
 
             scope.join();
 
-            var bestFlight = Stream.of(t1, t2, t3)
-                    .filter(t -> t1.state() == StructuredTaskScope.Subtask.State.SUCCESS)
-                    .map(StructuredTaskScope.Subtask::get)
-                    .min(Comparator.comparing(Flight::price))
-                    .get();
-
-            return bestFlight;
+            return scope.bestFlight();
 
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
