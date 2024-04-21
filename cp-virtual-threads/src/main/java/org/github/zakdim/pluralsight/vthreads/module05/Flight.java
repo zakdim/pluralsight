@@ -60,10 +60,19 @@ public record Flight(String from, String to, int price, String airline) {
     }
 
     public static Flight readFromAlphaAirlines(String from, String to) {
+        if (from.equals("New York")) {
+            throw null;
+        }
         sleepFor(random.nextInt(80, 100), ChronoUnit.MILLIS);
-        return new Flight(from, to,
-                random.nextInt(70, 120),
-                "Alpha Air Lines");
+        if (from.equals("Atlanta") || to.equals("Atlanta")) {
+            return new Flight(from, to,
+                    random.nextInt(30, 50),
+                    "Alpha Air Lines");
+        } else {
+            return new Flight(from, to,
+                    random.nextInt(70, 120),
+                    "Alpha Air Lines");
+        }
     }
 
     public static Flight readFromGlobalAirlines(String from, String to) {
