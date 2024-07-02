@@ -2,8 +2,6 @@ package org.github.zakdim.pluralsight.vthreads.module05;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 /**
  * Create by dmitri on 2024-04-10.

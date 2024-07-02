@@ -23,6 +23,6 @@ public class C_BookMultiLegFlight {
         MultiLegFlight travel = readMultiLegFlight(flightQuery1, flightQuery2);
 
         var end = Instant.now();
-        System.out.println(STR."Flight = \{travel} in \{Duration.between(start, end).toMillis()}");
+        System.out.println(STR."Flight = \{travel} in \{Duration.between(start, end).toMillis()}ms");
     }
 }

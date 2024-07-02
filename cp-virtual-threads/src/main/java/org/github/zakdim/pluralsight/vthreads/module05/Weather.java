@@ -24,19 +24,20 @@ public record Weather(String weather, String server) {
 
             scope.join(); // blocking code that will return when all the tasks are done
 
-            System.out.println(STR."F1: \{f1.state()}");
-            if (f1.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
-                System.out.println(STR." \{f1.get()}");
-            }
-            System.out.println(STR."F2: \{f2.state()}");
-            if (f2.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
-                System.out.println(STR." \{f2.get()}");
-            }
-            System.out.println(STR."F3: \{f3.state()}");
-            if (f3.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
-                System.out.println(STR." \{f3.get()}");
-            }
+//            System.out.println(STR."F1: \{f1.state()}");
+//            if (f1.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
+//                System.out.println(STR." \{f1.get()}");
+//            }
+//            System.out.println(STR."F2: \{f2.state()}");
+//            if (f2.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
+//                System.out.println(STR." \{f2.get()}");
+//            }
+//            System.out.println(STR."F3: \{f3.state()}");
+//            if (f3.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
+//                System.out.println(STR." \{f3.get()}");
+//            }
 
+            // The first successful weather server response will be returned
             return scope.result();
 
         } catch (InterruptedException | ExecutionException e) {
